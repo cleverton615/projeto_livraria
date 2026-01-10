@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import livro from "../models/Livro.js";
 import { autor } from "../models/Autor.js";
 import { editora } from "../models/Editora.js";
@@ -70,11 +71,17 @@ class LivroController {
   }
 
   static async listarLivrosPorEditora(req, res) {
-    const editora = req.query.editora;
+    const editoraId = req.query.editora;
     try {
-      const livrosPorEditora = await livro.find({ editora: editora });
+      if (!editoraId) {
+        return res.status(400).json({ message: "ID da editora não fornecido" });
+      }
+      
+      const objectId = new mongoose.Types.ObjectId(editoraId);
+      const livrosPorEditora = await livro.find({ "editora._id": objectId });
       res.status(200).json(livrosPorEditora);
     } catch (erro) {
+      console.error("Erro ao buscar livros por editora:", erro);
       res.status(500).json({ message: `${erro.message} - falha na busca` });
     }
   }
